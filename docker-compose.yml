@@ -10,7 +10,7 @@ services:
       - HOST=0.0.0.0
       - PORT=8000
       - ENVIRONMENT=production
-      - CORS_ORIGINS=https://bingo.skfbapps.com
+      - 'CORS_ORIGINS=["https://bingo.skfbapps.com"]'
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8000/health\")'"]

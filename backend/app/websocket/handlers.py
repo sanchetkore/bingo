@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import ipaddress
 from typing import Any, Dict
 from fastapi import WebSocket, WebSocketDisconnect
 from pydantic import ValidationError
@@ -70,7 +71,24 @@ async def handle_websocket_connection(websocket: WebSocket, game_id: str):
                 return
 
             # Rate limiting
-            identifier = current_player_id if current_player_id else websocket.client.host
+            identifier = current_player_id
+            if not identifier:
+                forwarded = websocket.headers.get("X-Forwarded-For")
+                if forwarded:
+                    ips = [ip.strip() for ip in forwarded.split(",") if ip.strip()]
+                    for ip_str in reversed(ips):
+                        try:
+                            ip_obj = ipaddress.ip_address(ip_str)
+                            if not ip_obj.is_private:
+                                identifier = ip_str
+                                break
+                        except ValueError:
+                            continue
+                    if not identifier and ips:
+                        identifier = ips[-1]
+                if not identifier:
+                    identifier = websocket.client.host if websocket.client else "unknown"
+
             if await ws_message_limiter.is_rate_limited(identifier):
                 await websocket.send_text(
                     ErrorMessage(code="RATE_LIMITED", message="Too many messages. Please slow down.").model_dump_json()

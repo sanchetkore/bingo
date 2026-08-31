@@ -35,11 +35,22 @@ class HealthResponse(BaseModel):
     status: str
 
 
+import ipaddress
+
 def get_client_ip(request: Request) -> str:
-    # Handle proxy headers for IP
     forwarded = request.headers.get("X-Forwarded-For")
     if forwarded:
-        return forwarded.split(",")[0].strip()
+        ips = [ip.strip() for ip in forwarded.split(",") if ip.strip()]
+        # Traverse right-to-left, trusting private IPs as internal proxies
+        for ip_str in reversed(ips):
+            try:
+                ip_obj = ipaddress.ip_address(ip_str)
+                if not ip_obj.is_private:
+                    return ip_str
+            except ValueError:
+                continue
+        # If all are private (e.g., local dev), use the rightmost appended by our proxy
+        return ips[-1] if ips else "unknown"
     return request.client.host if request.client else "unknown"
 
 
