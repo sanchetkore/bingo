@@ -27,21 +27,21 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
       {/* Sound toggle button */}
       <button
         onClick={handleToggleMute}
-        className="p-2 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700 transition shadow-lg backdrop-blur"
+        className="button-secondary !p-2"
         title={isMuted ? 'Unmute Sound' : 'Mute Sound'}
         aria-label="Toggle Sound"
       >
-        {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
+        {isMuted ? <VolumeX className="w-4 h-4 text-red-300" /> : <Volume2 className="w-4 h-4 text-emerald-300" />}
       </button>
 
       {/* Connection Indicator */}
       {isReconnecting ? (
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-semibold shadow-lg backdrop-blur animate-pulse">
+        <div className="panel-light flex items-center gap-2 px-3 py-1.5 text-amber-200 text-xs font-semibold animate-pulse">
           <RefreshCw className="w-3.5 h-3.5 animate-spin" />
           <span>Reconnecting...</span>
         </div>
       ) : !isConnected ? (
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/20 border border-red-500/40 text-red-300 text-xs font-semibold shadow-lg backdrop-blur">
+        <div className="panel-light flex items-center gap-2 px-3 py-1.5 text-red-200 text-xs font-semibold">
           <WifiOff className="w-3.5 h-3.5" />
           <span>Offline</span>
         </div>
@@ -49,7 +49,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
 
       {/* Error Toast */}
       {errorMessage && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 max-w-md w-[90%] bg-red-950/90 border border-red-500/50 text-red-100 px-4 py-3 rounded-xl shadow-2xl backdrop-blur flex items-center justify-between gap-3 animate-bounce-subtle z-50">
+        <div className="panel fixed bottom-4 left-1/2 -translate-x-1/2 max-w-md w-[90%] text-red-100 px-4 py-3 flex items-center justify-between gap-3 animate-bounce-subtle z-50">
           <div className="flex items-center gap-2.5">
             <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
             <p className="text-sm font-medium">{errorMessage}</p>
@@ -57,7 +57,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
           {onClearError && (
             <button
               onClick={onClearError}
-              className="text-xs text-red-300 hover:text-white underline shrink-0 font-semibold"
+              className="text-xs text-red-200 hover:text-white underline shrink-0 font-semibold"
             >
               Dismiss
             </button>

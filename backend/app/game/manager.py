@@ -31,7 +31,7 @@ from app.security import (
 
 
 class GameInstance:
-    def __init__(self, game_id: str, game_code: str, host_player: Player, server_seed: str):
+    def __init__(self, game_id: str, game_code: str, host_player: Player, server_seed: str, call_mode: str = "player", draw_speed: int = 5):
         self.game_id = game_id
         self.game_code = game_code
         self.host_player_id = host_player.player_id
@@ -40,6 +40,8 @@ class GameInstance:
         self.server_seed_hash = sha256_hash(server_seed)
         self.created_at = time.time()
         self.max_number: int = 75
+        self.call_mode = call_mode
+        self.draw_speed = draw_speed
 
         # Players ordered by join order
         self.players: Dict[str, Player] = {host_player.player_id: host_player}
@@ -54,10 +56,13 @@ class GameInstance:
 
         # Lock for atomic game operations
         self.lock = asyncio.Lock()
+        
+        # Asyncio task for server draw loop
+        self.draw_task: Optional[asyncio.Task] = None
 
     @property
     def current_turn_player_id(self) -> Optional[str]:
-        if self.status != GameStatus.ACTIVE or not self.player_order:
+        if self.status != GameStatus.ACTIVE or not self.player_order or self.call_mode == "server":
             return None
         if 0 <= self.current_turn_index < len(self.player_order):
             return self.player_order[self.current_turn_index]
@@ -81,6 +86,8 @@ class GameInstance:
             status=self.status,
             host_player_id=self.host_player_id,
             players=public_players,
+            call_mode=self.call_mode,
+            draw_speed=self.draw_speed,
             current_turn=self.current_turn_player_id,
             called_numbers=list(self.called_numbers),
             last_number=self.last_number,
@@ -117,7 +124,7 @@ class GameManager:
                 if code in self.code_to_game_id:
                     del self.code_to_game_id[code]
 
-    async def create_game(self, host_name: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]]:
+    async def create_game(self, host_name: str, call_mode: str = "player", draw_speed: int = 5) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]]:
         """
         Creates a new game.
         Returns (game_id, game_code, host_player_id, session_token, server_seed_hash, err).
@@ -153,6 +160,8 @@ class GameManager:
                 game_code=game_code,
                 host_player=host_player,
                 server_seed=server_seed,
+                call_mode=call_mode,
+                draw_speed=draw_speed,
             )
 
             self.games[game_id] = game
@@ -268,6 +277,9 @@ class GameManager:
             starting_index = secrets.randbelow(len(game.player_order))
             game.current_turn_index = starting_index
             game.status = GameStatus.ACTIVE
+            
+            if game.call_mode == "server":
+                game.draw_task = asyncio.create_task(self._auto_draw_loop(game_id))
 
             return True, None, player_cards
 
@@ -283,6 +295,9 @@ class GameManager:
             return False, "Game not found.", None, None
 
         async with game.lock:
+            if game.call_mode == "server":
+                return False, "This game is set to auto-draw numbers by the server.", None, None
+
             if game.status != GameStatus.ACTIVE:
                 return False, f"Game is not active (current status: {game.status.value}).", None, None
 
@@ -357,24 +372,18 @@ class GameManager:
             if not player or not player.card:
                 return False, "Player card not found.", None
 
-            # If specific pattern was claimed, verify it
-            valid_pattern: Optional[WinningPattern] = None
-            if pattern:
-                is_valid, err = verify_claimed_pattern(player.card, game.called_set, pattern)
-                if is_valid:
-                    valid_pattern = pattern
-                else:
-                    return False, f"Invalid claim: {err}", None
+            # Check for 5 valid lines
+            patterns = find_all_valid_patterns(player.card, game.called_set)
+            if len(patterns) >= 5:
+                # We can just use the first pattern as the visual trigger, or create a custom one
+                valid_pattern = patterns[0]
             else:
-                # Search for any valid pattern on the player's card
-                patterns = find_all_valid_patterns(player.card, game.called_set)
-                if patterns:
-                    valid_pattern = patterns[0]
-                else:
-                    return False, "No valid Bingo pattern completed on your card.", None
+                return False, f"You only have {len(patterns)} lines. You need 5 lines to claim Bingo!", None
 
             # Mark game as FINISHED and declare winner
             game.status = GameStatus.FINISHED
+            if game.draw_task:
+                game.draw_task.cancel()
             winner_info = WinnerInfo(
                 player_id=player.player_id,
                 name=player.name,
@@ -462,6 +471,48 @@ class GameManager:
                 "winner": game.winner.model_dump() if game.winner else None,
                 "players": audit_players,
             }
+
+
+    async def _auto_draw_loop(self, game_id: str):
+        from app.websocket.manager import connection_manager
+        from app.websocket.schemas import NumberCalledMessage
+
+        while True:
+            game = self.get_game(game_id)
+            if not game or game.status != GameStatus.ACTIVE:
+                break
+                
+            await asyncio.sleep(game.draw_speed)
+            
+            # Re-fetch game state in case it changed during sleep
+            game = self.get_game(game_id)
+            if not game or game.status != GameStatus.ACTIVE:
+                break
+            
+            async with game.lock:
+                # Find uncalled numbers
+                uncalled = [n for n in range(1, game.max_number + 1) if n not in game.called_set]
+                if not uncalled:
+                    break
+                
+                # Pick a random number
+                import secrets
+                number = secrets.choice(uncalled)
+                
+                # Call it
+                game.called_numbers.append(number)
+                game.called_set.add(number)
+                game.last_number = number
+
+            # Broadcast
+            msg = NumberCalledMessage(
+                number=number,
+                called_count=len(game.called_numbers),
+                selected_by="server",
+                selected_by_name="Server Auto-Draw",
+                next_turn=""
+            )
+            await connection_manager.broadcast_to_game(msg, game_id)
 
 
 # Singleton instance of GameManager

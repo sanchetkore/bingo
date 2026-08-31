@@ -11,6 +11,8 @@ router = APIRouter()
 
 class CreateGameRequest(BaseModel):
     host_name: str = Field(default="Host", max_length=30)
+    call_mode: str = Field(default="player", description="Can be 'player' or 'server'")
+    draw_speed: int = Field(default=5, ge=1, le=15, description="Seconds between server draws")
 
 
 class CreateGameResponse(BaseModel):
@@ -66,7 +68,9 @@ async def create_game(req: CreateGameRequest, request: Request):
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Rate limit exceeded.")
 
     game_id, game_code, host_player_id, session_token, server_seed_hash, err = await game_manager.create_game(
-        host_name=req.host_name
+        host_name=req.host_name,
+        call_mode=req.call_mode,
+        draw_speed=req.draw_speed
     )
     if err:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=err)

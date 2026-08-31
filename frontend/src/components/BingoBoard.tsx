@@ -23,66 +23,70 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
   onSelectNumber,
 }) => {
   const calledSet = useMemo(() => new Set(calledNumbers), [calledNumbers]);
+  const [daubedNumbers, setDaubedNumbers] = React.useState<Set<number>>(new Set());
 
+  // Auto-daub numbers that are no longer in calledSet (e.g., if a new game starts), 
+  // but wait, calledSet only grows.
+  
   const detectedPatterns = useMemo(() => {
     if (!card) return [];
-    return detectWinningPatterns(card, calledSet);
-  }, [card, calledSet]);
+    return detectWinningPatterns(card, daubedNumbers);
+  }, [card, daubedNumbers]);
 
-  const hasBingoAvailable = detectedPatterns.length > 0 && !winnerDeclared;
+  const hasBingoAvailable = detectedPatterns.length >= 5 && !winnerDeclared;
 
   if (!card) {
     return (
-      <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 text-center text-slate-400">
-        <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-3" />
-        <p className="text-sm font-semibold">Generating your secure Bingo card...</p>
+      <div className="panel p-8 text-center text-stone-400">
+        <div className="animate-spin w-8 h-8 border-2 border-amber-300 border-t-transparent rounded-full mx-auto mb-3" />
+        <p className="text-sm font-semibold">Dealing your card...</p>
       </div>
     );
   }
 
   const columnHeaders = [
-    { letter: 'B', bg: 'bg-red-500/20 text-red-400 border-red-500/40' },
-    { letter: 'I', bg: 'bg-amber-500/20 text-amber-400 border-amber-500/40' },
-    { letter: 'N', bg: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/40' },
-    { letter: 'G', bg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' },
-    { letter: 'O', bg: 'bg-blue-500/20 text-blue-400 border-blue-500/40' },
+    { letter: 'B', bg: 'bg-red-500/25 text-red-100 border-red-300/40' },
+    { letter: 'I', bg: 'bg-orange-500/25 text-orange-100 border-orange-300/40' },
+    { letter: 'N', bg: 'bg-amber-300 text-stone-950 border-amber-200/80' },
+    { letter: 'G', bg: 'bg-emerald-500/25 text-emerald-100 border-emerald-300/40' },
+    { letter: 'O', bg: 'bg-cyan-500/25 text-cyan-100 border-cyan-300/40' },
   ];
 
   return (
     <div className="flex flex-col items-center w-full max-w-md mx-auto">
       {/* Local Bingo Alert Banner & Action */}
       {hasBingoAvailable && (
-        <div className="w-full mb-3 p-3.5 bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-amber-500/20 border-2 border-emerald-400/80 rounded-2xl shadow-2xl animate-pulse backdrop-blur flex items-center justify-between gap-3">
+        <div className="panel w-full mb-3 p-3.5 border-amber-300/70 animate-pulse flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-emerald-500 rounded-xl text-slate-950">
+            <div className="ball-3d h-11 w-11 flex items-center justify-center text-stone-950 [--ball-color:#d6a84f]">
               <Trophy className="w-5 h-5 animate-bounce" />
             </div>
             <div>
-              <div className="text-xs font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5" /> BINGO AVAILABLE!
+              <div className="text-xs font-black text-amber-200 flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5" /> Bingo ready
               </div>
-              <div className="text-xs text-slate-300">You have completed a winning line!</div>
+              <div className="text-xs text-stone-300">You have 5 winning lines!</div>
             </div>
           </div>
 
           <button
             onClick={() => onClaimBingo(detectedPatterns[0])}
             disabled={disabled}
-            className="py-2 px-4 bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-300 hover:to-green-400 active:scale-95 text-slate-950 font-black text-sm uppercase tracking-wider rounded-xl shadow-lg shadow-emerald-500/30 transition border border-emerald-300"
+            className="button-primary !py-2 !px-4 text-sm"
           >
-            CLAIM!
+            Claim
           </button>
         </div>
       )}
 
       {/* Bingo Card Container */}
-      <div className="w-full bg-slate-900 border-2 border-slate-700/80 rounded-3xl p-3 md:p-4 shadow-2xl backdrop-blur">
+      <div className="surface-3d panel w-full p-3 md:p-4">
         {/* Column Header B-I-N-G-O */}
         <div className="grid grid-cols-5 gap-1.5 md:gap-2 mb-2">
           {columnHeaders.map((col) => (
             <div
               key={col.letter}
-              className={`py-2 md:py-2.5 rounded-xl border text-center font-black text-lg md:text-xl shadow-sm ${col.bg}`}
+              className={`py-2 md:py-2.5 rounded-md border text-center font-black text-lg md:text-xl shadow-sm ${col.bg}`}
             >
               {col.letter}
             </div>
@@ -94,32 +98,54 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
           {card.grid.map((row, rIdx) =>
             row.map((cell, cIdx) => {
               const isFree = cell.value === 'FREE';
-              const isMarked = isFree || (typeof cell.value === 'number' && calledSet.has(cell.value));
+              // isMarked is only true if the player MANUALLY daubed it
+              const isMarked = isFree || (typeof cell.value === 'number' && daubedNumbers.has(cell.value));
               const isWinning = isWinningCell(rIdx, cIdx, detectedPatterns);
-              const isSelectable = !disabled && !winnerDeclared && isMyTurn && !isMarked && typeof cell.value === 'number';
+              
+              // In player-turn mode, a cell is selectable if it's my turn and the number hasn't been called by anyone yet.
+              const isTurnSelectable = !disabled && !winnerDeclared && isMyTurn && typeof cell.value === 'number' && !calledSet.has(cell.value);
+              
+              // A cell is daubable if it has been called but not daubed yet
+              const isDaubable = !disabled && !winnerDeclared && typeof cell.value === 'number' && calledSet.has(cell.value) && !isMarked;
 
               return (
                 <div
                   key={`${rIdx}-${cIdx}`}
                   onClick={() => {
-                    if (isSelectable && onSelectNumber) {
+                    if (cell.value === 'FREE') return;
+                    
+                    if (isTurnSelectable && onSelectNumber) {
                       onSelectNumber(cell.value as number);
+                      setDaubedNumbers(prev => new Set(prev).add(cell.value as number));
+                    } else if (isDaubable) {
+                      // Toggle daub manually
+                      setDaubedNumbers(prev => {
+                        const next = new Set(prev);
+                        if (next.has(cell.value as number)) {
+                          next.delete(cell.value as number);
+                        } else {
+                          next.add(cell.value as number);
+                        }
+                        return next;
+                      });
                     }
                   }}
-                  className={`relative aspect-square flex flex-col items-center justify-center rounded-2xl md:rounded-3xl font-black text-base md:text-xl transition-all duration-300 border select-none ${
+                  className={`tile-3d relative aspect-square flex flex-col items-center justify-center rounded-md font-black text-base md:text-xl transition-all duration-300 border select-none ${
                     isWinning
-                      ? 'bg-gradient-to-br from-amber-400/30 to-emerald-500/40 border-emerald-400 text-emerald-200 ring-2 ring-emerald-400/50 shadow-lg shadow-emerald-500/20'
+                      ? 'bg-amber-300/25 border-amber-300 text-amber-100 ring-2 ring-amber-300/40'
                       : isMarked
-                      ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300 shadow-inner'
-                      : isSelectable
-                      ? 'bg-slate-800 border-emerald-500/50 text-white cursor-pointer hover:bg-emerald-900/40 hover:border-emerald-400 hover:scale-[1.02] shadow-emerald-500/20 shadow-lg'
-                      : 'bg-slate-800/80 border-slate-700 text-slate-200 shadow'
+                      ? 'bg-emerald-950/60 border-emerald-300/40 text-emerald-200 shadow-inner'
+                      : isTurnSelectable
+                      ? 'bg-white/[0.08] border-cyan-300/[0.45] text-white cursor-pointer hover:bg-cyan-400/[0.16] hover:border-cyan-200'
+                      : isDaubable
+                      ? 'bg-white/[0.06] border-white/10 text-stone-200 shadow cursor-pointer'
+                      : 'bg-white/[0.06] border-white/10 text-stone-200 shadow'
                   }`}
                 >
                   {isFree ? (
                     <div className="flex flex-col items-center justify-center">
-                      <Star className="w-4 h-4 md:w-5 md:h-5 text-amber-400 fill-amber-400 animate-pulse" />
-                      <span className="text-[9px] md:text-[10px] uppercase tracking-wider font-extrabold text-amber-300 mt-0.5">
+                      <Star className="w-4 h-4 md:w-5 md:h-5 text-amber-300 fill-amber-300 animate-pulse" />
+                      <span className="text-[9px] md:text-[10px] font-extrabold text-amber-200 mt-0.5">
                         FREE
                       </span>
                     </div>
@@ -127,7 +153,7 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
                     <>
                       <span className="tracking-tight">{cell.value}</span>
                       {isMarked && (
-                        <span className="absolute bottom-1 right-1.5 text-emerald-400">
+                        <span className="absolute bottom-1 right-1.5 text-emerald-300">
                           <Check className="w-3 h-3 md:w-3.5 md:h-3.5 stroke-[3]" />
                         </span>
                       )}

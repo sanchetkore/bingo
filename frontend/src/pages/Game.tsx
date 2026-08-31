@@ -42,30 +42,30 @@ export const Game: React.FC<GameProps> = ({
   return (
     <div className="min-h-screen py-4 px-3 sm:px-4 max-w-2xl mx-auto space-y-4 pb-12">
       {/* Game Header */}
-      <div className="flex items-center justify-between bg-slate-900/90 border border-slate-800 rounded-2xl px-4 py-2.5 shadow-lg">
+      <div className="panel flex items-center justify-between px-4 py-2.5">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-emerald-500 text-slate-950 font-black flex items-center justify-center text-sm shadow">
+          <div className="ball-3d w-9 h-9 text-stone-950 font-black flex items-center justify-center text-sm [--ball-color:#d6a84f]">
             B
           </div>
           <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400">Game Room</div>
-            <div className="text-xs font-black text-white font-mono tracking-wider">{gameState.game_code}</div>
+            <div className="fine-label">Room</div>
+            <div className="text-xs font-black text-white font-mono">{gameState.game_code}</div>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowPlayersDrawer(!showPlayersDrawer)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-semibold text-slate-300 transition"
+            className="button-secondary !py-1.5 !px-3 text-xs"
           >
-            <Users className="w-3.5 h-3.5 text-emerald-400" />
+            <Users className="w-3.5 h-3.5 text-cyan-300" />
             <span className="hidden sm:inline">{gameState.players.length} Players</span>
             {showPlayersDrawer ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
 
           <button
             onClick={onOpenRules}
-            className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-xl transition"
+            className="button-secondary !p-2"
             title="Game Rules"
           >
             <HelpCircle className="w-4 h-4" />
@@ -73,7 +73,7 @@ export const Game: React.FC<GameProps> = ({
 
           <button
             onClick={onLeaveGame}
-            className="p-1.5 bg-red-900/40 hover:bg-red-500 text-red-400 hover:text-white rounded-xl transition border border-red-900/50 hover:border-red-500 ml-1"
+            className="button-secondary !p-2 text-red-200"
             title="Leave Game"
           >
             <LogOut className="w-4 h-4" />
@@ -97,6 +97,8 @@ export const Game: React.FC<GameProps> = ({
         currentTurnPlayerId={gameState.current_turn}
         myPlayerId={myPlayerId}
         players={gameState.players}
+        callMode={gameState.call_mode}
+        drawSpeed={gameState.draw_speed}
       />
 
       {/* Called Numbers Tracker */}
@@ -113,16 +115,16 @@ export const Game: React.FC<GameProps> = ({
         onClaimBingo={onClaimBingo}
         disabled={isFinished}
         winnerDeclared={isFinished}
-        isMyTurn={isMyTurn && !isFinished}
+        isMyTurn={gameState.call_mode === 'player' && isMyTurn && !isFinished}
         onSelectNumber={onSelectNumber}
       />
 
       {/* Footer / Card Commitment info */}
       {cardCommitmentHash && (
-        <div className="text-center text-[10px] text-slate-400 flex items-center justify-center gap-1">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Card Commitment:</span>
-          <span className="font-mono text-slate-400" title={cardCommitmentHash}>
+        <div className="text-center text-[10px] text-stone-400 flex items-center justify-center gap-1">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+          <span>Card hash</span>
+          <span className="font-mono text-stone-400" title={cardCommitmentHash}>
             {cardCommitmentHash.slice(0, 16)}...
           </span>
         </div>

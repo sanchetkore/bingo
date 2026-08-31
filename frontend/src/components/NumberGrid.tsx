@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Lock } from 'lucide-react';
-import { getColumnLetterForNumber, BINGO_COLUMNS } from '../game/card';
+import { BINGO_COLUMNS, getColumnLetterForNumber } from '../game/card';
 
 interface NumberGridProps {
   calledNumbers: number[];
@@ -17,7 +17,6 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
 }) => {
   const [selectedColumnFilter, setSelectedColumnFilter] = useState<'ALL' | 'B' | 'I' | 'N' | 'G' | 'O'>('ALL');
   const calledSet = useMemo(() => new Set(calledNumbers), [calledNumbers]);
-
   const allNumbers = useMemo(() => Array.from({ length: 75 }, (_, i) => i + 1), []);
 
   const filteredNumbers = useMemo(() => {
@@ -31,27 +30,24 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl">
+    <div className="panel p-4">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-            Number Selector (1–75)
-          </span>
+          <span className="fine-label text-stone-300">Number board</span>
           {!isMyTurn && (
-            <span className="flex items-center gap-1 text-[11px] text-amber-400/90 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+            <span className="flex items-center gap-1 text-[11px] text-amber-200 bg-amber-300/10 px-2 py-0.5 rounded-full border border-amber-300/20">
               <Lock className="w-3 h-3" /> Locked
             </span>
           )}
         </div>
 
-        {/* Column Filter Tabs for quick mobile navigation */}
-        <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+        <div className="flex bg-stone-950/70 p-1 rounded-lg border border-white/10 text-xs">
           <button
             onClick={() => setSelectedColumnFilter('ALL')}
-            className={`px-2 py-1 rounded-lg font-bold transition ${
+            className={`px-2 py-1 rounded-md font-bold transition ${
               selectedColumnFilter === 'ALL'
-                ? 'bg-slate-800 text-white shadow'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white/10 text-white shadow'
+                : 'text-stone-400 hover:text-stone-200'
             }`}
           >
             ALL
@@ -60,10 +56,10 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
             <button
               key={col}
               onClick={() => setSelectedColumnFilter(col)}
-              className={`px-2 py-1 rounded-lg font-bold transition ${
+              className={`px-2 py-1 rounded-md font-bold transition ${
                 selectedColumnFilter === col
-                  ? 'bg-emerald-500 text-slate-950 shadow'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-amber-300 text-stone-950 shadow'
+                  : 'text-stone-400 hover:text-stone-200'
               }`}
             >
               {col}
@@ -72,11 +68,10 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
         </div>
       </div>
 
-      {/* Grid of Numbers */}
       <div
         className={`grid gap-1.5 sm:gap-2 transition-all ${
           selectedColumnFilter === 'ALL'
-            ? 'grid-cols-5 sm:grid-cols-10 md:grid-cols-15'
+            ? 'grid-cols-5 sm:grid-cols-10 md:[grid-template-columns:repeat(15,minmax(0,1fr))]'
             : 'grid-cols-5'
         }`}
       >
@@ -90,12 +85,12 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
               type="button"
               onClick={() => handleNumberClick(num)}
               disabled={!canClick}
-              className={`relative aspect-square flex flex-col items-center justify-center rounded-xl text-xs sm:text-sm font-bold border transition duration-150 select-none ${
+              className={`tile-3d relative aspect-square flex items-center justify-center rounded-md text-xs sm:text-sm font-bold border transition duration-150 select-none ${
                 isCalled
-                  ? 'bg-slate-950 border-slate-900 text-slate-600 opacity-40 cursor-not-allowed line-through'
+                  ? 'bg-stone-950/80 border-stone-900 text-stone-600 opacity-45 cursor-not-allowed line-through'
                   : canClick
-                  ? 'bg-slate-800 hover:bg-emerald-500 hover:border-emerald-400 hover:text-slate-950 border-slate-700 text-slate-100 shadow active:scale-90 cursor-pointer'
-                  : 'bg-slate-800/40 border-slate-800/60 text-slate-500 cursor-not-allowed'
+                  ? 'bg-white/[0.08] hover:bg-amber-300 hover:border-amber-200 hover:text-stone-950 border-white/10 text-stone-100 cursor-pointer'
+                  : 'bg-white/[0.035] border-white/10 text-stone-500 cursor-not-allowed'
               }`}
             >
               <span>{num}</span>

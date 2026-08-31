@@ -35,13 +35,21 @@ export interface WinnerInfo {
   claimed_at: number;
 }
 
+export interface CreateGameRequest {
+  host_name: string;
+  call_mode: 'player' | 'server';
+  draw_speed: number;
+}
+
 export interface GameStatePublic {
   game_id: string;
   game_code: string;
   status: GameStatus;
   host_player_id: string;
   players: PlayerPublic[];
-  current_turn?: string | null;
+  call_mode: 'player' | 'server';
+  draw_speed: number;
+  current_turn: string | null;
   called_numbers: number[];
   last_number?: number | null;
   server_seed_hash: string;

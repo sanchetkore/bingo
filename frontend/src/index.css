@@ -3,9 +3,139 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --felt: #08352f;
+    --felt-deep: #061d1e;
+    --ink: #f7f3e8;
+    --rail: #171717;
+    --brass: #d6a84f;
+    --coral: #e65d4f;
+    --cyan: #45b7d1;
+    --leaf: #41b883;
+  }
+
+  html {
+    background: var(--felt-deep);
+  }
+
   body {
-    @apply bg-slate-950 text-slate-100 antialiased;
+    @apply text-stone-100 antialiased;
+    background:
+      linear-gradient(115deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 100%),
+      radial-gradient(circle at 50% -20%, rgba(214,168,79,0.14), transparent 32rem),
+      linear-gradient(140deg, #061d1e 0%, #092f2a 48%, #151515 100%);
+    background-size: 34px 34px, auto, auto;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  button,
+  input {
+    letter-spacing: 0;
+  }
+}
+
+@layer components {
+  .table-shell {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .table-shell::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background:
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
+  }
+
+  .panel {
+    @apply border border-white/10 bg-stone-950/[0.72] shadow-2xl backdrop-blur-xl;
+    border-radius: 8px;
+    box-shadow:
+      0 22px 48px rgba(0,0,0,0.34),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+
+  .panel-light {
+    @apply border border-white/10 bg-white/[0.055] backdrop-blur-xl;
+    border-radius: 8px;
+  }
+
+  .button-primary {
+    @apply inline-flex items-center justify-center gap-2 border border-amber-300/40 bg-amber-400 px-4 py-3 font-black text-stone-950 shadow-lg transition;
+    border-radius: 8px;
+    box-shadow: 0 7px 0 #8a5b1e, 0 18px 32px rgba(0,0,0,0.3);
+  }
+
+  .button-primary:hover {
+    @apply bg-amber-300;
+    transform: translateY(-1px);
+  }
+
+  .button-primary:active {
+    transform: translateY(5px);
+    box-shadow: 0 2px 0 #8a5b1e, 0 10px 22px rgba(0,0,0,0.25);
+  }
+
+  .button-secondary {
+    @apply inline-flex items-center justify-center gap-2 border border-white/10 bg-white/[0.075] px-4 py-3 font-bold text-stone-100 shadow-lg transition;
+    border-radius: 8px;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.35), 0 16px 26px rgba(0,0,0,0.18);
+  }
+
+  .button-secondary:hover {
+    @apply bg-white/[0.12] text-white;
+    transform: translateY(-1px);
+  }
+
+  .button-secondary:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.35), 0 10px 18px rgba(0,0,0,0.18);
+  }
+
+  .surface-3d {
+    transform-style: preserve-3d;
+    transform: perspective(1000px) rotateX(3deg);
+  }
+
+  .ball-3d {
+    border-radius: 9999px;
+    background:
+      radial-gradient(circle at 30% 24%, rgba(255,255,255,0.95) 0 9%, rgba(255,255,255,0.25) 10% 18%, transparent 19%),
+      radial-gradient(circle at 48% 48%, var(--ball-color, #d6a84f), color-mix(in srgb, var(--ball-color, #d6a84f) 72%, #111 28%) 72%);
+    box-shadow:
+      inset -10px -14px 18px rgba(0,0,0,0.24),
+      inset 8px 9px 15px rgba(255,255,255,0.22),
+      0 14px 18px rgba(0,0,0,0.32);
+  }
+
+  .tile-3d {
+    transform-style: preserve-3d;
+    box-shadow:
+      0 5px 0 rgba(0,0,0,0.36),
+      0 12px 22px rgba(0,0,0,0.22),
+      inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+
+  .tile-3d:hover {
+    transform: translateY(-2px) rotateX(5deg);
+  }
+
+  .tile-3d:active {
+    transform: translateY(3px);
+    box-shadow:
+      0 2px 0 rgba(0,0,0,0.42),
+      0 8px 14px rgba(0,0,0,0.22),
+      inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+
+  .fine-label {
+    @apply text-[11px] font-bold uppercase text-stone-400;
   }
 }
 
@@ -22,6 +152,19 @@
 
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-out forwards;
+}
+
+@keyframes floatCard {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotateX(7deg) rotateZ(-2deg);
+  }
+  50% {
+    transform: translate3d(0, -8px, 0) rotateX(7deg) rotateZ(2deg);
+  }
+}
+
+.animate-floatCard {
+  animation: floatCard 6s ease-in-out infinite;
 }
 
 /* Custom modern scrollbar */

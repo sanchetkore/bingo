@@ -147,7 +147,7 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-emerald-500 selection:text-white">
+    <div className="table-shell min-h-screen text-stone-100 antialiased selection:bg-amber-300 selection:text-stone-950">
       {/* Global Connection / Sound / Error Widget */}
       <ConnectionStatus
         isConnected={isConnected}

@@ -74,6 +74,8 @@ class GameStatePublic(BaseModel):
     status: GameStatus
     host_player_id: str
     players: List[PlayerPublic]
+    call_mode: str = "player"  # "player" or "server"
+    draw_speed: int = 5
     current_turn: Optional[str] = None
     called_numbers: List[int] = []
     last_number: Optional[int] = None

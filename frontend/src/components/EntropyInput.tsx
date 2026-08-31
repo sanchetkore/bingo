@@ -36,22 +36,22 @@ export const EntropyInput: React.FC<EntropyInputProps> = ({
   };
 
   return (
-    <div className="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-4 md:p-5 shadow-lg">
+    <div className="panel-light p-4 md:p-5">
       <div className="flex items-center justify-between gap-2 mb-2.5">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-400">
+          <div className="p-1.5 bg-amber-300/15 border border-amber-300/30 rounded-md text-amber-300">
             <Sparkles className="w-4 h-4" />
           </div>
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider">Make Your Card Random</h3>
+          <h3 className="text-sm font-bold text-white">Card seed</h3>
         </div>
-        <div className="flex items-center gap-1 text-[11px] text-slate-400">
-          <Shield className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Fair Seed Entropy</span>
+        <div className="flex items-center gap-1 text-[11px] text-stone-400">
+          <Shield className="w-3.5 h-3.5 text-emerald-300" />
+          <span>Optional</span>
         </div>
       </div>
 
-      <p className="text-xs text-slate-400 mb-3 leading-relaxed">
-        Enter custom characters or roll the dice. These characters are cryptographically combined with the server seed to generate your card.
+      <p className="text-xs text-stone-400 mb-3 leading-relaxed">
+        Add a few private characters or roll a seed. The server mixes it into your card.
       </p>
 
       <form onSubmit={handleSave} className="space-y-3">
@@ -66,13 +66,13 @@ export const EntropyInput: React.FC<EntropyInputProps> = ({
             placeholder="e.g. X7@kP91!zQ"
             disabled={disabled}
             maxLength={32}
-            className="flex-1 bg-slate-900 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl px-3 py-2 text-sm text-emerald-400 font-mono tracking-wider placeholder:text-slate-600 outline-none transition"
+            className="flex-1 min-w-0 bg-stone-950/75 border border-white/10 focus:border-amber-300 focus:ring-1 focus:ring-amber-300 rounded-lg px-3 py-2 text-sm text-amber-200 font-mono placeholder:text-stone-600 outline-none transition"
           />
           <button
             type="button"
             onClick={generateRandomString}
             disabled={disabled}
-            className="p-2.5 bg-slate-700 hover:bg-slate-600 active:scale-95 text-slate-200 hover:text-white rounded-xl border border-slate-600 transition"
+            className="button-secondary !p-2.5"
             title="Generate Random Characters"
             aria-label="Randomize Entropy"
           >
@@ -82,20 +82,20 @@ export const EntropyInput: React.FC<EntropyInputProps> = ({
 
         <button
           type="submit"
-          disabled={disabled || !entropy.trim()}
-          className={`w-full py-2 px-4 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow ${
-            isSaved
+            disabled={disabled || !entropy.trim()}
+            className={`w-full py-2 px-4 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 shadow ${
+              isSaved
               ? 'bg-emerald-600 text-white'
-              : 'bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 disabled:opacity-50 disabled:cursor-not-allowed'
+              : 'bg-amber-300 hover:bg-amber-200 active:scale-[0.98] text-stone-950 disabled:opacity-50 disabled:cursor-not-allowed'
           }`}
         >
           {isSaved ? (
             <>
               <Check className="w-4 h-4" />
-              <span>Entropy Applied!</span>
+              <span>Seed saved</span>
             </>
           ) : (
-            <span>Apply Entropy</span>
+            <span>Save seed</span>
           )}
         </button>
       </form>
