@@ -1,0 +1,16 @@
+{
+  "name": "BINGO Realtime Multiplayer",
+  "short_name": "BINGO",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "icons": [
+    {
+      "src": "/skfb_logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

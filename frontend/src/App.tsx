@@ -7,6 +7,7 @@ import { Lobby } from './pages/Lobby';
 import { Game } from './pages/Game';
 import { ConnectionStatus } from './components/ConnectionStatus';
 import { RulesModal } from './components/RulesModal';
+import { AppControls } from './components/AppControls';
 
 type AppView = 'home' | 'create' | 'join';
 
@@ -164,6 +165,9 @@ export function App() {
 
       {/* Rules Modal */}
       <RulesModal isOpen={isRulesOpen} onClose={() => setIsRulesOpen(false)} />
+
+      {/* Global Floating Controls */}
+      <AppControls />
     </div>
   );
 }

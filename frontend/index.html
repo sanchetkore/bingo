@@ -28,6 +28,8 @@
     <!-- Tracker -->
     <script async defer src="https://status.skfbapps.com/tracker.js" data-website-id="cmthcjg5f77rnkemy040qv5vu"></script>
 
+    <link rel="manifest" href="/manifest.json" />
+
     <!-- Google Fonts for crisp modern gaming typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,5 +38,12 @@
   <body class="bg-slate-950 text-slate-100 antialiased selection:bg-emerald-500 selection:text-white font-['Outfit',sans-serif] min-h-screen">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    </script>
   </body>
 </html>
