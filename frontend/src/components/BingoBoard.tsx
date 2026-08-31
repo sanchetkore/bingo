@@ -44,12 +44,14 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
     );
   }
 
+  const linesCount = detectedPatterns.length;
+  
   const columnHeaders = [
-    { letter: 'B', bg: 'bg-red-500/25 text-red-100 border-red-300/40' },
-    { letter: 'I', bg: 'bg-orange-500/25 text-orange-100 border-orange-300/40' },
-    { letter: 'N', bg: 'bg-amber-300 text-stone-950 border-amber-200/80' },
-    { letter: 'G', bg: 'bg-emerald-500/25 text-emerald-100 border-emerald-300/40' },
-    { letter: 'O', bg: 'bg-cyan-500/25 text-cyan-100 border-cyan-300/40' },
+    { letter: 'B', index: 1, activeBg: 'bg-red-500 text-red-50 border-red-400 ring-2 ring-red-400/40 shadow-[0_0_15px_rgba(239,68,68,0.5)]' },
+    { letter: 'I', index: 2, activeBg: 'bg-orange-500 text-orange-50 border-orange-400 ring-2 ring-orange-400/40 shadow-[0_0_15px_rgba(249,115,22,0.5)]' },
+    { letter: 'N', index: 3, activeBg: 'bg-amber-400 text-stone-950 border-amber-300 ring-2 ring-amber-300/40 shadow-[0_0_15px_rgba(251,191,36,0.5)]' },
+    { letter: 'G', index: 4, activeBg: 'bg-emerald-500 text-emerald-50 border-emerald-400 ring-2 ring-emerald-400/40 shadow-[0_0_15px_rgba(16,185,129,0.5)]' },
+    { letter: 'O', index: 5, activeBg: 'bg-cyan-500 text-cyan-50 border-cyan-400 ring-2 ring-cyan-400/40 shadow-[0_0_15px_rgba(6,182,212,0.5)]' },
   ];
 
   return (
@@ -83,14 +85,21 @@ export const BingoBoard: React.FC<BingoBoardProps> = ({
       <div className="surface-3d panel w-full p-3 md:p-4">
         {/* Column Header B-I-N-G-O */}
         <div className="grid grid-cols-5 gap-1.5 md:gap-2 mb-2">
-          {columnHeaders.map((col) => (
-            <div
-              key={col.letter}
-              className={`py-2 md:py-2.5 rounded-md border text-center font-black text-lg md:text-xl shadow-sm ${col.bg}`}
-            >
-              {col.letter}
-            </div>
-          ))}
+          {columnHeaders.map((col) => {
+            const isActive = linesCount >= col.index;
+            const inactiveBg = 'bg-white/[0.04] text-white/40 border-white/10';
+            
+            return (
+              <div
+                key={col.letter}
+                className={`py-2 md:py-2.5 rounded-md border text-center font-black text-lg md:text-xl transition-all duration-500 ${
+                  isActive ? col.activeBg : inactiveBg
+                }`}
+              >
+                {col.letter}
+              </div>
+            );
+          })}
         </div>
 
         {/* 5x5 Grid */}
