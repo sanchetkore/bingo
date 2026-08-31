@@ -96,13 +96,36 @@ class GameManager:
         self.games: Dict[str, GameInstance] = {}
         self.code_to_game_id: Dict[str, str] = {}
         self.global_lock = asyncio.Lock()
+        self.max_active_games = 1000
 
-    async def create_game(self, host_name: str) -> Tuple[str, str, str, str, str]:
+    async def cleanup_stale_games(self):
+        async with self.global_lock:
+            current_time = time.time()
+            # Stale after 2 hours
+            ttl = 7200
+            stale_games = []
+            for game_id, game in self.games.items():
+                if current_time - game.created_at > ttl:
+                    stale_games.append(game_id)
+                elif game.status == GameStatus.FINISHED and current_time - (game.winner.claimed_at if game.winner else game.created_at) > 1800:
+                    # Clean finished games after 30 mins
+                    stale_games.append(game_id)
+            
+            for gid in stale_games:
+                code = self.games[gid].game_code
+                del self.games[gid]
+                if code in self.code_to_game_id:
+                    del self.code_to_game_id[code]
+
+    async def create_game(self, host_name: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]]:
         """
         Creates a new game.
-        Returns (game_id, game_code, host_player_id, session_token, server_seed_hash).
+        Returns (game_id, game_code, host_player_id, session_token, server_seed_hash, err).
         """
         async with self.global_lock:
+            if len(self.games) >= self.max_active_games:
+                return None, None, None, None, None, "Maximum active games reached."
+
             game_id = generate_secure_id("g")
             
             # Ensure unique 6-digit code
@@ -135,7 +158,7 @@ class GameManager:
             self.games[game_id] = game
             self.code_to_game_id[game_code] = game_id
 
-            return game_id, game_code, host_player_id, session_token, game.server_seed_hash
+            return game_id, game_code, host_player_id, session_token, game.server_seed_hash, None
 
     async def join_game(self, game_code: str, player_name: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[str]]:
         """

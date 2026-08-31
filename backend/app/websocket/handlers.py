@@ -32,6 +32,7 @@ from app.websocket.schemas import (
     StartGameMessage,
     TurnChangedMessage,
 )
+from app.rate_limit import ws_message_limiter
 
 logger = logging.getLogger("bingo.handlers")
 
@@ -46,9 +47,36 @@ async def handle_websocket_connection(websocket: WebSocket, game_id: str):
     try:
         # Initially accept the raw connection
         await websocket.accept()
+        
+        # Concurrent sockets per game limit
+        async with connection_manager.lock:
+            if game_id in connection_manager.active_connections:
+                if len(connection_manager.active_connections[game_id]) >= 16:
+                    await websocket.close(code=1013, reason="Game is full or too many connections.")
+                    return
 
         while True:
-            raw_text = await websocket.receive_text()
+            try:
+                if not is_authenticated:
+                    raw_text = await asyncio.wait_for(websocket.receive_text(), timeout=10.0)
+                else:
+                    raw_text = await websocket.receive_text()
+            except asyncio.TimeoutError:
+                await websocket.close(code=1008, reason="Authentication timeout.")
+                return
+
+            if len(raw_text) > 4096:
+                await websocket.close(code=1009, reason="Payload too large.")
+                return
+
+            # Rate limiting
+            identifier = current_player_id if current_player_id else websocket.client.host
+            if await ws_message_limiter.is_rate_limited(identifier):
+                await websocket.send_text(
+                    ErrorMessage(code="RATE_LIMITED", message="Too many messages. Please slow down.").model_dump_json()
+                )
+                continue
+
             try:
                 data: Dict[str, Any] = json.loads(raw_text)
             except json.JSONDecodeError:

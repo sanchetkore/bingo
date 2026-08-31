@@ -6,7 +6,7 @@ from app.game.models import GameStatus
 @pytest.mark.asyncio
 async def test_game_creation_and_turns():
     gm = GameManager()
-    g_id, g_code, host_id, host_token, seed_hash = await gm.create_game("HostPlayer")
+    g_id, g_code, host_id, host_token, seed_hash, _ = await gm.create_game("HostPlayer")
     assert g_id.startswith("g_")
     assert len(g_code) == 6
     assert host_id.startswith("p_")

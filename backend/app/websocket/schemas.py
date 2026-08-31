@@ -55,7 +55,7 @@ class JoinGameMessage(ClientBaseMessage):
 class SetEntropyMessage(ClientBaseMessage):
     type: ClientMessageType = ClientMessageType.SET_ENTROPY
     player_id: str
-    entropy: str
+    entropy: str = Field(..., max_length=64)
 
 
 class StartGameMessage(ClientBaseMessage):

@@ -6,7 +6,7 @@ from app.game.models import GameStatus, WinningPattern, WinningPatternType
 @pytest.mark.asyncio
 async def test_complete_game_lifecycle():
     gm = GameManager()
-    g_id, g_code, host_id, _, _ = await gm.create_game("HostAlice")
+    g_id, g_code, host_id, _, _, _ = await gm.create_game("HostAlice")
     _, p2_id, _, _ = await gm.join_game(g_code, "Bob")
 
     # Set entropy
@@ -52,7 +52,7 @@ async def test_complete_game_lifecycle():
 @pytest.mark.asyncio
 async def test_player_reconnection():
     gm = GameManager()
-    g_id, g_code, host_id, host_token, _ = await gm.create_game("Alice")
+    g_id, g_code, host_id, host_token, _, _ = await gm.create_game("Alice")
 
     # Disconnect Alice
     await gm.handle_disconnect(g_id, host_id)
