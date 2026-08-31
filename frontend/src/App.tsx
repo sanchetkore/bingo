@@ -91,6 +91,9 @@ export function App() {
               players: [],
               called_numbers: [],
               server_seed_hash: '',
+              call_mode: 'player',
+              draw_speed: 5,
+              current_turn: null,
             }
           }
           myPlayerId={playerId}
