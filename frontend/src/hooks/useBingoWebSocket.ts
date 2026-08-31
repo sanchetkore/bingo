@@ -46,8 +46,7 @@ export function useBingoWebSocket({ gameId, playerId, sessionToken }: UseBingoWe
     // Fallback to window.location
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.hostname;
-    // In local dev, Vite proxy handles /ws or backend is on 8000
-    const port = window.location.port === '5173' ? '8000' : window.location.port;
+    const port = window.location.port;
     const portStr = port ? `:${port}` : '';
     return `${protocol}//${host}${portStr}/ws/${gId}`;
   }, []);

@@ -123,7 +123,11 @@ async def join_game(game_code: str, req: JoinGameRequest, request: Request):
 
 
 @router.get("/api/games/{game_id}/audit", tags=["Games"])
-async def audit_game_randomness(game_id: str):
+async def audit_game_randomness(game_id: str, request: Request):
+    client_ip = get_client_ip(request)
+    if await api_rate_limiter.is_rate_limited(client_ip):
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Rate limit exceeded.")
+
     success, err, audit_data = await game_manager.verify_game_audit(game_id)
     if not success or not audit_data:
         raise HTTPException(
